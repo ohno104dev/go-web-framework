@@ -11,6 +11,9 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/ohno104dev/go-web-framework/gin/idl"
+
+	"google.golang.org/protobuf/proto"
 	"gopkg.in/yaml.v3"
 )
 
@@ -18,11 +21,29 @@ func main() {
 	Get("/home")
 	PostForm("/student/form", Student{Name: "小陳", Addr: "Us"})
 	PostJson("/student/json", Student{Name: "小王", Addr: "Us"})
+	PostXml("/stu/xml", Student{Name: "小黃", Addr: "Uk"})
+	PostYaml("/stu/yaml", Student{Name: "小張", Addr: "Aus"})
+	PostPb("/stu/multi_type", Student{Name: "小吳", Addr: "Cn"})
 }
 
 type Student struct {
-	Name string
-	Addr string
+	Name     string   `form:"username" json:"name" uri:"user" xml:"user" yaml:"user" binding:"required"`
+	Addr     string   `form:"addr" json:"addr" uri:"addr" xml:"addr" yaml:"addr" binding:"required"`
+	Keywords []string `form:"keywords"`
+}
+
+func PostPb(path string, stu Student) {
+	fmt.Print("post pb " + path + " ")
+	inst := idl.Student{Name: stu.Name, Address: stu.Addr}
+	if bs, err := proto.Marshal(&inst); err == nil {
+		if resp, err := http.Post("http://127.0.0.1:5678"+path, "", bytes.NewReader(bs)); err != nil {
+			panic(err)
+		} else {
+			processResponse(resp)
+		}
+	} else {
+		slog.Error("proto marshal failed", "error", err)
+	}
 }
 
 func PostXml(path string, stu Student) {

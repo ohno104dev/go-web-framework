@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/ohno104dev/go-web-framework/gin/idl"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 )
@@ -49,15 +51,17 @@ type Student struct {
 func multiBind(engine *gin.Engine) {
 	engine.POST("/stu/multi_type", func(ctx *gin.Context) {
 		var stu Student
-
+		var stu2 idl.Student
 		if err := ctx.ShouldBindBodyWith(&stu, binding.JSON); err == nil {
 			ctx.String(http.StatusOK, stu.Name+" live in "+stu.Addr)
 		} else if err := ctx.ShouldBindBodyWith(&stu, binding.XML); err == nil {
 			ctx.String(http.StatusOK, stu.Name+" live in "+stu.Addr)
 		} else if err := ctx.ShouldBindBodyWith(&stu, binding.YAML); err == nil {
 			ctx.String(http.StatusOK, stu.Name+" live in "+stu.Addr)
+		} else if err := ctx.ShouldBindBodyWith(&stu2, binding.ProtoBuf); err == nil {
+			ctx.String(http.StatusOK, stu2.Name+" live in "+stu2.Address)
 		} else {
-			ctx.String(http.StatusBadRequest, "parse parameter failed")
+			ctx.String(http.StatusBadRequest, "不支持的參數類型")
 		}
 	})
 }

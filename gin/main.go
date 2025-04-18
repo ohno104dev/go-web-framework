@@ -109,3 +109,5 @@ func homeHandler(ctx *gin.Context) {
 	ctx.JSON(200, map[string]any{"國文": 66, "數學": 77})
 	ctx.JSON(200, gin.H{"物理": 35, "化學": 78})
 }
+
+// go build -tags=jsoniter -o gin.exe ./gin
