@@ -13,9 +13,9 @@ import (
 )
 
 func main() {
-	// http.HandleFunc("/obs", HttpObservation)
-	// http.HandleFunc("/get", Get)
-	// http.HandleFunc("/stream", StreamBody)
+	http.HandleFunc("/obs", HttpObservation)
+	http.HandleFunc("/get", Get)
+	http.HandleFunc("/stream", StreamBody)
 	http.HandleFunc("/student", Student)
 
 	if err := http.ListenAndServe("127.0.0.1:5678", nil); err != nil {

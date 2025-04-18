@@ -16,7 +16,26 @@ func main() {
 	// HttpObservation()
 	// Get()
 	// Steam()
-	Student()
+	// Student()
+	Head()
+}
+
+// 可以用來檢查url是否存活, 只會取得HEAD部分, 不能取得response body
+func Head() {
+	fmt.Println(strings.Repeat("*", 30) + "GET" + strings.Repeat("*", 30))
+
+	resp, err := http.Head("http://127.0.0.1:5678/get")
+	if err != nil {
+		panic(err)
+	} else {
+		defer resp.Body.Close()
+		fmt.Printf("response status: %s\n", resp.Status)
+		fmt.Println("response body:")
+		if body, err := io.ReadAll(resp.Body); err == nil {
+			fmt.Print(string(body))
+		}
+		os.Stdout.WriteString("\n\n")
+	}
 }
 
 func Student() {
