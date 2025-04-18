@@ -24,6 +24,16 @@ func main() {
 	PostXml("/stu/xml", Student{Name: "小黃", Addr: "Uk"})
 	PostYaml("/stu/yaml", Student{Name: "小張", Addr: "Aus"})
 	PostPb("/stu/multi_type", Student{Name: "小吳", Addr: "Cn"})
+
+	Get("/user/text")
+	Get("/user/json0")
+	Get("/user/json1")
+	Get("/user/json2")
+	Get("/user/jsonp")
+	Get("/user/xml")
+	Get("user/pb")
+	Get("user/html")
+	Get("user/old_page")
 }
 
 type Student struct {

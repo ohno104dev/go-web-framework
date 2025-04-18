@@ -71,6 +71,16 @@ func main() {
 	uploadFile(engin)
 	uploadFiles(engin)
 
+	text(engin)
+	json0(engin)
+	json1(engin)
+	json2(engin)
+	jsonp(engin)
+	xml(engin)
+	protoBuf(engin)
+	html(engin)
+	redirect(engin)
+
 	if err := engin.Run("127.0.0.1:5678"); err != nil {
 		panic(err)
 	}
@@ -126,5 +136,3 @@ func homeHandler(ctx *gin.Context) {
 	ctx.JSON(200, map[string]any{"國文": 66, "數學": 77})
 	ctx.JSON(200, gin.H{"物理": 35, "化學": 78})
 }
-
-// go build -tags=jsoniter -o gin.exe ./gin
