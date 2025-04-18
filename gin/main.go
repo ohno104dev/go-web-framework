@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -10,11 +11,50 @@ import (
 )
 
 func main() {
-	engin := gin.Default()
-	engin.GET("/home", homeHandler)
+	// engin := gin.Default() // Default 使用Logger和Recovery MiddleWare
+
+	// 不使用預設MiddleWare
+	engin := gin.New()
+	// 全局MiddleWare
+	engin.Use(gin.Logger())
+	engin.Use(gin.Recovery())
+	engin.Use(M6)
+	engin.GET("/1", M1, M2, M3, M4, M5)
+	engin.GET("/2", M2, M3, M2, M4, M5)
+
+	engin.GET("/home", gin.Logger(), homeHandler)
+
 	if err := engin.Run("127.0.0.1:5678"); err != nil {
 		panic(err)
 	}
+}
+
+func M6(ctx *gin.Context) {
+	slog.Info("visit", "path", ctx.Request.URL)
+}
+
+func M1(ctx *gin.Context) {
+	ctx.String(200, "M1 Begin\n")
+	ctx.Next()
+	ctx.String(200, "M1 End\n")
+}
+
+func M2(ctx *gin.Context) {
+	ctx.String(200, "Here is M2\n")
+	// 就算沒有調用ctx.Next(), 也會進入下一個MiddleWare
+}
+
+func M3(ctx *gin.Context) {
+	ctx.String(200, "Heere is M3\n")
+}
+
+func M4(ctx *gin.Context) {
+	ctx.String(200, "Here is M4 Abort\n")
+	ctx.Abort()
+}
+
+func M5(ctx *gin.Context) {
+	ctx.String(200, "Here is M5\n")
 }
 
 func homeHandler(ctx *gin.Context) {
