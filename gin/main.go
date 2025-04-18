@@ -11,13 +11,30 @@ import (
 )
 
 func main() {
-	// engin := gin.Default() // Default 使用Logger和Recovery MiddleWare
+	engin := gin.Default() // Default 使用Logger和Recovery MiddleWare
 
-	// 不使用預設MiddleWare
-	engin := gin.New()
-	// 全局MiddleWare
-	engin.Use(gin.Logger())
-	engin.Use(gin.Recovery())
+	// 	Router分組
+	{
+		g1 := engin.Group("/v1")
+		g1.Use(M6)
+		g1.GET("/a", func(ctx *gin.Context) {
+			ctx.String(200, "name=abc")
+		})
+		g1.GET("/b", func(ctx *gin.Context) {
+			ctx.String(200, "age=18")
+		})
+	}
+
+	{
+		g2 := engin.Group("/v2")
+		g2.GET("/a", func(ctx *gin.Context) {
+			ctx.JSON(200, gin.H{"name": "abc"})
+		})
+		g2.GET("/b", func(ctx *gin.Context) {
+			ctx.JSON(200, gin.H{"age": 18})
+		})
+	}
+
 	engin.Use(M6)
 	engin.GET("/1", M1, M2, M3, M4, M5)
 	engin.GET("/2", M2, M3, M2, M4, M5)
