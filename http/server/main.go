@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"io"
 	"net/http"
 	"strconv"
@@ -14,11 +15,37 @@ import (
 func main() {
 	// http.HandleFunc("/obs", HttpObservation)
 	// http.HandleFunc("/get", Get)
-	http.HandleFunc("/stream", StreamBody)
+	// http.HandleFunc("/stream", StreamBody)
+	http.HandleFunc("/student", Student)
 
 	if err := http.ListenAndServe("127.0.0.1:5678", nil); err != nil {
 		panic(err)
 	}
+}
+
+func Student(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	type Student struct {
+		Id     int
+		Name   string
+		Gender string
+		Score  int
+	}
+
+	student := []Student{
+		{1, "張三", "男", 80},
+		{2, "李四", "女", 77},
+	}
+
+	tmpl, err := template.ParseFiles("./http/server/student.html")
+	if err != nil {
+		fmt.Println("create template failed:", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	tmpl.Execute(w, student)
 }
 
 func StreamBody(w http.ResponseWriter, r *http.Request) {

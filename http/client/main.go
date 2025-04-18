@@ -15,7 +15,21 @@ import (
 func main() {
 	// HttpObservation()
 	// Get()
-	Steam()
+	// Steam()
+	Student()
+}
+
+func Student() {
+	fmt.Println(strings.Repeat("*", 30) + "GET" + strings.Repeat("*", 30))
+	if resp, err := http.Get("http://127.0.0.1:5678/student"); err != nil {
+		panic(err)
+	} else {
+		defer resp.Body.Close()
+		fmt.Printf("response status: %s\n", resp.Status)
+		fmt.Println("response body:")
+		io.Copy(os.Stdout, resp.Body)
+		os.Stdout.WriteString("\n\n")
+	}
 }
 
 // resp.Body為stream, 作用是避免一次性加載大量內容, 透過keep-alive做分段傳輸
