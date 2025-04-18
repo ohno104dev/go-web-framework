@@ -81,6 +81,14 @@ func main() {
 	html(engin)
 	redirect(engin)
 
+	// 在url訪問目錄/data等於訪問文件系統中的views/data目錄
+	engin.Static("data", "gin/static/data")
+
+	// 在url訪問文件/favicon.ico等於訪問文件系統中的views/ico/entry.ico
+	engin.StaticFile("/favicon.ico", "gin/static/ico/entry.ico")
+	engin.Use(CountMD)
+	engin.GET("/ck", SetCookie)
+
 	if err := engin.Run("127.0.0.1:5678"); err != nil {
 		panic(err)
 	}

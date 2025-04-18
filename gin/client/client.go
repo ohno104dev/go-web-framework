@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
 	"github.com/ohno104dev/go-web-framework/gin/idl"
 
@@ -31,9 +32,11 @@ func main() {
 	Get("/user/json2")
 	Get("/user/jsonp")
 	Get("/user/xml")
-	Get("user/pb")
-	Get("user/html")
-	Get("user/old_page")
+	Get("/user/pb")
+	Get("/user/html")
+	Get("/user/old_page")
+
+	Request("/ck", http.MethodGet, nil)
 }
 
 type Student struct {
@@ -126,4 +129,41 @@ func processResponse(resp *http.Response) {
 	fmt.Println("response code: ", resp.StatusCode)
 	io.Copy(os.Stdout, resp.Body)
 	os.Stdout.WriteString("\n\n")
+}
+
+func Request(path, method string, body []string) {
+	request, err := http.NewRequest(method, "http://127.0.0.1:5678"+path, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	// 可以添加多個Cookie
+	request.AddCookie(
+		&http.Cookie{
+			Name:  "token",
+			Value: "idgnoiewfq",
+		},
+	)
+
+	// 所有的cookie都會放到一個http request header中. Cookie:[auth=pass; token=idgnoiewfq; ...]
+	client := &http.Client{
+		Timeout: 500 * time.Millisecond,
+	}
+
+	if resp, err := client.Do(request); err != nil {
+		fmt.Println(err)
+	} else {
+		defer resp.Body.Close()
+		fmt.Println("response header:")
+		// 可以直接使用resp.Cookies()獲得*http.Cookie
+		if values, exists := resp.Header["Set-Cookie"]; exists {
+			fmt.Println(values[0])
+			cookie, _ := http.ParseSetCookie(values[0])
+			fmt.Println("Name", cookie.Name)
+			fmt.Println("Domain", cookie.Domain)
+			fmt.Println("Value", cookie.Value)
+			fmt.Println("MaxAge", cookie.MaxAge)
+			os.Stdout.WriteString("\n\n")
+		}
+	}
 }
