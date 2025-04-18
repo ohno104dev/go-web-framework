@@ -41,6 +41,13 @@ func main() {
 
 	engin.GET("/home", gin.Logger(), homeHandler)
 
+	url(engin)
+	restful(engin)
+	postForm(engin)
+	postJson(engin)
+	uploadFile(engin)
+	uploadFiles(engin)
+
 	if err := engin.Run("127.0.0.1:5678"); err != nil {
 		panic(err)
 	}
