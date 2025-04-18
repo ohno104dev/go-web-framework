@@ -8,10 +8,27 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 )
 
 func main() {
 	engin := gin.Default() // Default 使用Logger和Recovery MiddleWare
+
+	// 註冊validator
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("before_today", beforeToday)
+	}
+
+	engin.GET("/validation", func(ctx *gin.Context) {
+		var user User
+		if err := ctx.ShouldBind(&user); err != nil {
+			msg := processErr(err)
+			ctx.String(http.StatusBadRequest, "參數綁定失敗"+msg)
+		} else {
+			ctx.JSON(http.StatusOK, user)
+		}
+	})
 
 	// 	Router分組
 	{
