@@ -19,10 +19,34 @@ func main() {
 	http.HandleFunc("/stream", StreamBody)
 	http.HandleFunc("/student", Student)
 	http.HandleFunc("/post", Post)
+	http.HandleFunc("/cookie", Cookie)
 
 	if err := http.ListenAndServe("127.0.0.1:5678", nil); err != nil {
 		panic(err)
 	}
+}
+
+func Cookie(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("request header:")
+	for key, value := range r.Header {
+		fmt.Println(key, value)
+	}
+
+	// 可以直接使用r.Cookies()
+	if values, exists := r.Header["Cookie"]; exists {
+		cookies, _ := http.ParseCookie(values[0])
+		for _, cookie := range cookies {
+			fmt.Printf("%s: %s\n", cookie.Name, cookie.Value)
+		}
+		fmt.Println(strings.Repeat("*", 60))
+	}
+
+	// Set-Cookie, 服務端只能返回一個
+	expiration := time.Now().Add(30 * 24 * time.Hour)
+	cookie1 := http.Cookie{Name: "csrftoken", Value: "abcdabcd", Expires: expiration, Domain: "localhost", Path: "/"}
+	cookie2 := http.Cookie{Name: "jwt", Value: "77777", Expires: expiration, Domain: "localhost", Path: "/"}
+	http.SetCookie(w, &cookie1) // SetCookie只能執行一次
+	http.SetCookie(w, &cookie2) // 無效
 }
 
 func Post(w http.ResponseWriter, r *http.Request) {

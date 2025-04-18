@@ -11,6 +11,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	myhttp "github.com/ohno104dev/go-web-framework/http/util"
 )
@@ -21,7 +22,61 @@ func main() {
 	// Steam()
 	// Student()
 	// Head()
-	Post()
+	// Post()
+	Cookie()
+}
+
+func Cookie() {
+	fmt.Println(strings.Repeat("*", 30) + "COOKIE" + strings.Repeat("*", 30))
+
+	request, err := http.NewRequest(http.MethodGet, "http://127.0.0.1:5678/cookie", nil)
+	if err != nil {
+		panic(err)
+	}
+	request.Header.Add("User-Agent", "Mozilla/5.0 (x64)") // 偽造User-Agent
+	request.Header.Add("user-role", "vvip")               // key會轉為規範大小寫
+
+	// 添加多個Cookie
+	request.AddCookie(
+		&http.Cookie{
+			Name:   "auth",
+			Value:  "pass",
+			Domain: "localhost",
+			Path:   "/",
+		},
+	)
+
+	// 所有的cookie都會放到一個http request header中, Cookie: [auth=pass; money=100]
+	request.AddCookie(&http.Cookie{
+		Name:  "money",
+		Value: "100",
+	})
+
+	// cookie的key可以重複
+	request.AddCookie(&http.Cookie{
+		Name:  "money",
+		Value: "800",
+	})
+
+	client := &http.Client{
+		Timeout: 500 * time.Millisecond,
+	}
+
+	if resp, err := client.Do(request); err != nil {
+		fmt.Println(err)
+	} else {
+		defer resp.Body.Close()
+		if values, exists := resp.Header["Set-Cookie"]; exists {
+			fmt.Println(values[0])
+			cookie, _ := http.ParseSetCookie(values[0])
+			fmt.Println("Name:", cookie.Name)
+			fmt.Println("Value:", cookie.Value)
+			fmt.Println("Domain:", cookie.Domain)
+			fmt.Println("MaxAge:", cookie.MaxAge)
+			fmt.Println(strings.Repeat("-", 50))
+		}
+		os.Stdout.WriteString("\n\n")
+	}
 }
 
 func Post() {
