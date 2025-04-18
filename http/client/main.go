@@ -1,18 +1,63 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	myhttp "github.com/ohno104dev/go-web-framework/http/util"
 )
 
 func main() {
-	HttpObservation()
-	Get()
+	// HttpObservation()
+	// Get()
+	Steam()
+}
+
+// resp.Body為stream, 作用是避免一次性加載大量內容, 透過keep-alive做分段傳輸
+func Steam() {
+	fmt.Println(strings.Repeat("*", 30) + "GET HUGE BODY FOR STEAM TEST" + strings.Repeat("*", 30))
+	if resp, err := http.Get("http://127.0.0.1:5678/stream"); err != nil {
+		panic(err)
+	} else {
+		headerKey := http.CanonicalHeaderKey("cOnTeNt-LeNg") // 替換格式
+		if h, ok := resp.Header[headerKey]; ok {
+			if size, err := strconv.Atoi(h[0]); err == nil {
+				haveRead := 0
+				reader := bufio.NewReader(resp.Body)
+				for {
+					if bs, err := reader.ReadBytes('\n'); err == nil {
+						haveRead += len(bs)
+						progress := float64(haveRead) / float64(size)
+						fmt.Printf("進度 %.2f%%, 內容 %s", 100*progress, string(bs))
+
+						//
+						if progress >= 0.5 {
+							resp.Body.Close()
+							return
+						}
+					} else {
+						if err == io.EOF {
+							if len(bs) > 0 {
+								fmt.Print(string(bs)) // 讀出剩餘的
+							}
+							break
+						} else {
+							fmt.Printf("read response body error: %s\n", err)
+						}
+					}
+				}
+				resp.Body.Close()
+			}
+		} else {
+			println("xxxxx")
+		}
+
+	}
 }
 
 func HttpObservation() {

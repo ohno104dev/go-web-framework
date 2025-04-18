@@ -4,18 +4,47 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 
 	myhttp "github.com/ohno104dev/go-web-framework/http/util"
 )
 
 func main() {
-	http.HandleFunc("/obs", HttpObservation)
-	http.HandleFunc("/get", Get)
+	// http.HandleFunc("/obs", HttpObservation)
+	// http.HandleFunc("/get", Get)
+	http.HandleFunc("/stream", StreamBody)
 
 	if err := http.ListenAndServe("127.0.0.1:5678", nil); err != nil {
 		panic(err)
 	}
+}
+
+func StreamBody(w http.ResponseWriter, r *http.Request) {
+	line := []byte("This is a mock test for send huge body data. Heavy is the head who wears the crown. \n")
+	// const rp = 1000_000_000
+	const rp = 10
+	totalSize := rp * len(line)
+	hkey := http.CanonicalHeaderKey("cOntEnt-lEnG")
+	w.Header().Add(hkey, strconv.Itoa(totalSize))
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "不支持Flush", http.StatusInternalServerError)
+		return
+	}
+
+	for i := range rp {
+		// 即使不顯式調用Flush(), Write()內容足夠大時也會觸發Flush()
+		if _, err := w.Write(line); err != nil {
+			fmt.Printf("rp: [%d] send error: %s\n", i, err)
+			break
+		} else {
+			flusher.Flush()
+			time.Sleep(time.Second * 1)
+		}
+	}
+	fmt.Println(strings.Repeat("*", 60))
 }
 
 func Get(w http.ResponseWriter, r *http.Request) {

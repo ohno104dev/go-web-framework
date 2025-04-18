@@ -18,7 +18,7 @@ func EncodeUrlParams(params map[string]string) string {
 	return sb.String()
 }
 
-// 透過QueryUnescape 安全解譯漢字, 空格, 特殊符號
+// 透過QueryEscape 安全解譯漢字, 空格, 特殊符號
 func ParseUrlParams(rawQuery string) map[string]string {
 	params := make(map[string]string, 10)
 	args := strings.Split(rawQuery, "&")
