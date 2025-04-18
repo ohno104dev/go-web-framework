@@ -14,6 +14,13 @@ import (
 )
 
 func main() {
+	// router1()
+	// router2()
+	router3()
+}
+
+// 無法區分請求類型
+func router1() {
 	http.HandleFunc("/obs", HttpObservation)
 	http.HandleFunc("/get", Get)
 	http.HandleFunc("/stream", StreamBody)
@@ -22,6 +29,59 @@ func main() {
 	http.HandleFunc("/cookie", Cookie)
 
 	if err := http.ListenAndServe("127.0.0.1:5678", nil); err != nil {
+		panic(err)
+	}
+}
+
+// before go1.22
+func router2() {
+	if err := http.ListenAndServe("127.0.0.1:5678", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet && r.URL.Path == "/obs" {
+			HttpObservation(w, r)
+		} else if r.Method == http.MethodGet && r.URL.Path == "/get" {
+			Get(w, r)
+		} else if r.Method == http.MethodPost && r.URL.Path == "/post" {
+			Post(w, r)
+		} else if r.Method == http.MethodGet && r.URL.Path == "/stream" {
+			StreamBody(w, r)
+		} else if r.Method == http.MethodGet && r.URL.Path == "/cookie" {
+			Cookie(w, r)
+		} else if r.Method == http.MethodGet && r.URL.Path == "/student" {
+			Student(w, r)
+		}
+	})); err != nil {
+		panic(err)
+	}
+}
+
+// after go1.22
+func router3() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /obs", func(w http.ResponseWriter, r *http.Request) {
+		HttpObservation(w, r)
+	})
+	mux.HandleFunc("GET /get", func(w http.ResponseWriter, r *http.Request) {
+		Get(w, r)
+	})
+	mux.HandleFunc("POST /post", func(w http.ResponseWriter, r *http.Request) {
+		Post(w, r)
+	})
+	mux.HandleFunc("GET /stream", func(w http.ResponseWriter, r *http.Request) {
+		StreamBody(w, r)
+	})
+	mux.HandleFunc("GET /cookie", func(w http.ResponseWriter, r *http.Request) {
+		Cookie(w, r)
+	})
+	// restful style
+	mux.HandleFunc("GET /get/{name}/{age}", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "your name is %s, age is %s \n", r.PathValue("name"), r.PathValue("age"))
+	})
+
+	mux.HandleFunc("GET /student", func(w http.ResponseWriter, r *http.Request) {
+		Student(w, r)
+	})
+
+	if err := http.ListenAndServe("127.0.0.1:5678", mux); err != nil {
 		panic(err)
 	}
 }

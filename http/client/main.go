@@ -17,13 +17,13 @@ import (
 )
 
 func main() {
-	// HttpObservation()
-	// Get()
-	// Steam()
+	// 	HttpObservation()
+	// 	Get()
+	Steam()
 	// Student()
 	// Head()
 	// Post()
-	Cookie()
+	// Cookie()
 }
 
 func Cookie() {
@@ -166,11 +166,11 @@ func Steam() {
 						progress := float64(haveRead) / float64(size)
 						fmt.Printf("進度 %.2f%%, 內容 %s", 100*progress, string(bs))
 
-						//
-						if progress >= 0.5 {
-							resp.Body.Close()
-							return
-						}
+						// 中途中止
+						// if progress >= 0.5 {
+						// 	resp.Body.Close()
+						// 	return
+						// }
 					} else {
 						if err == io.EOF {
 							if len(bs) > 0 {
