@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -17,9 +18,42 @@ func main() {
 	http.HandleFunc("/get", Get)
 	http.HandleFunc("/stream", StreamBody)
 	http.HandleFunc("/student", Student)
+	http.HandleFunc("/post", Post)
 
 	if err := http.ListenAndServe("127.0.0.1:5678", nil); err != nil {
 		panic(err)
+	}
+}
+
+func Post(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	if ct, exists := r.Header["Content-Type"]; exists {
+		switch ct[0] {
+		case "text/plain":
+			io.Copy(w, r.Body)
+		case "application/json":
+			body, err := io.ReadAll(r.Body)
+			if err == nil {
+				params := make(map[string]string, 0)
+				if err := json.Unmarshal(body, &params); err == nil {
+					fmt.Fprintf(w, "your name is %s, age is %s \n", params["name"], params["age"])
+				}
+			} else {
+				fmt.Println("read request body error", err)
+				w.WriteHeader(http.StatusBadRequest)
+			}
+		case "application/x-www-form-urlencoded":
+			body, err := io.ReadAll(r.Body)
+			if err == nil {
+				params := myhttp.ParseUrlParams(string(body))
+				fmt.Println("request body", string(body))
+				fmt.Fprintf(w, "your name is %s, age is %s \n", params["name"], params["age"])
+			} else {
+				fmt.Println("read request body error", err)
+				w.WriteHeader(http.StatusBadRequest)
+			}
+		}
 	}
 }
 

@@ -2,9 +2,12 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -17,12 +20,52 @@ func main() {
 	// Get()
 	// Steam()
 	// Student()
-	Head()
+	// Head()
+	Post()
+}
+
+func Post() {
+	fmt.Println(strings.Repeat("*", 30) + "POST" + strings.Repeat("*", 30))
+
+	if resp, err := http.Post("http://127.0.0.1:5678/post", "text/plain", strings.NewReader("Hello Server")); err != nil {
+		panic(err)
+	} else {
+		defer resp.Body.Close()
+		fmt.Printf("response status: %s\n", resp.Status)
+		fmt.Println("response body:")
+		if body, err := io.ReadAll(resp.Body); err == nil {
+			fmt.Print(string(body))
+		}
+		os.Stdout.WriteString("\n\n")
+	}
+
+	bs, _ := json.Marshal(map[string]string{"name": "小安", "age": "18"})
+	if resp, err := http.Post("http://127.0.0.1:5678/post", "application/json", bytes.NewReader(bs)); err != nil {
+		panic(err)
+	} else {
+		defer resp.Body.Close()
+		fmt.Printf("response status: %s\n", resp.Status)
+		fmt.Println("response body:")
+		io.Copy(os.Stdout, resp.Body)
+		os.Stdout.WriteString("\n\n")
+	}
+
+	// PostForm()自動Content-Type設為application/x-www-form-urlencoded
+	// 並把url.Values轉為URL-encode參數格式放到Request Body
+	if resp, err := http.PostForm("http://127.0.0.1:5678/post", url.Values{"name": []string{"小陳"}, "age": []string{"33"}}); err != nil {
+		panic(err)
+	} else {
+		defer resp.Body.Close()
+		fmt.Printf("response status: %s\n", resp.Status)
+		fmt.Println("response body:")
+		io.Copy(os.Stdout, resp.Body)
+		os.Stdout.WriteString("\n\n")
+	}
 }
 
 // 可以用來檢查url是否存活, 只會取得HEAD部分, 不能取得response body
 func Head() {
-	fmt.Println(strings.Repeat("*", 30) + "GET" + strings.Repeat("*", 30))
+	fmt.Println(strings.Repeat("*", 30) + "HEAD" + strings.Repeat("*", 30))
 
 	resp, err := http.Head("http://127.0.0.1:5678/get")
 	if err != nil {
