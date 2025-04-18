@@ -43,6 +43,12 @@ func main() {
 
 	url(engin)
 	restful(engin)
+	formBind(engin)
+	jsonBind(engin)
+	xmlBind(engin)
+	yamlBind(engin)
+	uriBind(engin)
+	multiBind(engin)
 	postForm(engin)
 	postJson(engin)
 	uploadFile(engin)

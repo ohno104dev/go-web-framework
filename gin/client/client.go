@@ -3,12 +3,15 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 func main() {
@@ -20,6 +23,32 @@ func main() {
 type Student struct {
 	Name string
 	Addr string
+}
+
+func PostXml(path string, stu Student) {
+	fmt.Print("post xml " + path + " ")
+	if bs, err := xml.Marshal(stu); err == nil {
+		if resp, err := http.Post("http://127.0.0.1:5678"+path, "", bytes.NewReader(bs)); err != nil {
+			panic(err)
+		} else {
+			processResponse(resp)
+		}
+	} else {
+		slog.Error("xml marshal failed", "error", err)
+	}
+}
+
+func PostYaml(path string, stu Student) {
+	fmt.Print("post yaml " + path + " ")
+	if bs, err := yaml.Marshal(stu); err == nil {
+		if resp, err := http.Post("http://127.0.0.1:5678"+path, "", bytes.NewReader(bs)); err != nil {
+			panic(err)
+		} else {
+			processResponse(resp)
+		}
+	} else {
+		slog.Error("yaml marshal failed", "error", err)
+	}
 }
 
 func PostJson(path string, stu Student) {

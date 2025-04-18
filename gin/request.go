@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 )
 
 // 從GET請求的URL中獲取參數
@@ -39,8 +40,87 @@ func postForm(engine *gin.Engine) {
 }
 
 type Student struct {
-	Name string
-	Addr string
+	Name     string   `form:"username" json:"name" uri:"user" xml:"user" yaml:"user" binding:"required"`
+	Addr     string   `form:"addr" json:"addr" uri:"addr" xml:"addr" yaml:"addr" binding:"required"`
+	Keywords []string `form:"keywords"`
+}
+
+// *** ctx.ShouldBindBodyWith 會在綁定之前將body儲存到Context, 可以重複讀取body, 但會對性能造成輕微影響
+func multiBind(engine *gin.Engine) {
+	engine.POST("/stu/multi_type", func(ctx *gin.Context) {
+		var stu Student
+
+		if err := ctx.ShouldBindBodyWith(&stu, binding.JSON); err == nil {
+			ctx.String(http.StatusOK, stu.Name+" live in "+stu.Addr)
+		} else if err := ctx.ShouldBindBodyWith(&stu, binding.XML); err == nil {
+			ctx.String(http.StatusOK, stu.Name+" live in "+stu.Addr)
+		} else if err := ctx.ShouldBindBodyWith(&stu, binding.YAML); err == nil {
+			ctx.String(http.StatusOK, stu.Name+" live in "+stu.Addr)
+		} else {
+			ctx.String(http.StatusBadRequest, "parse parameter failed")
+		}
+	})
+}
+
+func uriBind(engine *gin.Engine) {
+	//Get 請求的參數在uri裡
+	engine.GET("stu/uri/:user/*addr", func(ctx *gin.Context) {
+		var stu Student
+		if err := ctx.ShouldBindUri(&stu); err != nil {
+			fmt.Println(err)
+			ctx.String(http.StatusBadRequest, "parse parameter failed")
+		} else {
+			ctx.String(http.StatusOK, stu.Name+" live in "+stu.Addr)
+		}
+	})
+}
+
+func xmlBind(engine *gin.Engine) {
+	engine.POST("/stu/xml", func(ctx *gin.Context) {
+		var stu Student
+		if err := ctx.ShouldBindXML(&stu); err != nil {
+			fmt.Println(err)
+			ctx.String(http.StatusBadRequest, "parse parameter failed")
+		} else {
+			ctx.String(http.StatusOK, stu.Name+" live in "+stu.Addr)
+		}
+	})
+}
+
+func yamlBind(engin *gin.Engine) {
+	engin.POST("/stu/yaml", func(ctx *gin.Context) {
+		var stu Student
+		if err := ctx.ShouldBindYAML(&stu); err != nil {
+			fmt.Println(err)
+			ctx.String(http.StatusBadRequest, "parse parameter failed")
+		} else {
+			ctx.String(http.StatusOK, stu.Name+" live in "+stu.Addr)
+		}
+	})
+}
+
+func jsonBind(engine *gin.Engine) {
+	engine.POST("stu/json", func(ctx *gin.Context) {
+		var stu Student
+		if err := ctx.ShouldBindJSON(&stu); err != nil {
+			fmt.Println(err)
+			ctx.String(http.StatusBadRequest, "parse parameter filed")
+		} else {
+			ctx.String(http.StatusOK, stu.Name+" live in "+stu.Addr)
+		}
+	})
+}
+
+func formBind(engine *gin.Engine) {
+	engine.POST("/stu/form", func(ctx *gin.Context) {
+		var stu Student
+		if err := ctx.ShouldBind(&stu); err != nil {
+			fmt.Println(err)
+			ctx.String(http.StatusBadRequest, "parse parameter failed")
+		} else {
+			ctx.String(http.StatusOK, stu.Name+" live in "+stu.Addr)
+		}
+	})
 }
 
 func postJson(engine *gin.Engine) {
